@@ -26,12 +26,15 @@ def main():
     parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='Password for user given by --username.')
+    parser.add_argument('--debug', '-d', action='store_true', help='Increase verbosity.')
 
     if not ext_deps: parser.error("Missing one of the python modules 'requests' or 'beautifulsoup'.")
 
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s %(message)s')
+    if args.debug: level = logging.DEBUG
+    else: level = logging.INFO
+    logging.basicConfig(level=level, format='%(levelname)-8s %(message)s')
     logging.getLogger("requests").setLevel(logging.WARNING)
 
     browser = Browser(args.user_agent, args.cookie_file)
