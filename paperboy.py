@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 FAZ-paperboy delivers your FAZ or F.A.S. newspaper freshly every day.
