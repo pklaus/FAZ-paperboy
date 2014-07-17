@@ -2,29 +2,33 @@
 
 """
 FAZ-paperboy delivers your FAZ or F.A.S. newspaper freshly every day.
-
-pip install requests
-
 """
 
-import requests
+try:
+    from bs4 import BeautifulSoup
+    import requests
+    ext_deps = True
+except ImportError:
+    ext_deps = False
 import random
 import http.cookiejar
 import time
 import os
 import sys
 import stat
-from bs4 import BeautifulSoup
 import logging
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--user-agent', '-ua', required=True, help='User agent you want paperboy to use.')
     parser.add_argument('--output-directory', '-o', required=True, help='Directory to store the PDFs of the downloaded newspaper issues.')
     parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='Password for user given by --username.')
+
+    if not ext_deps: parser.error("Missing one of the python modules 'requests' or 'beautifulsoup'.")
+
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s %(message)s')
