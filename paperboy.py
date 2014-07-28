@@ -28,7 +28,7 @@ def main():
     parser.add_argument('--cookie-file', '-c', help='Password for user given by --username.')
     parser.add_argument('--debug', '-d', action='store_true', help='Increase verbosity.')
 
-    if not ext_deps: parser.error("Missing one of the python modules 'requests' or 'beautifulsoup'.")
+    if not ext_deps: parser.error("Missing at least one of the python modules 'requests' or 'beautifulsoup'.")
 
     args = parser.parse_args()
 
