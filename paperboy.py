@@ -164,9 +164,11 @@ class Browser(object):
         return func(*args, **kwargs)
 
     def get(self, *args, **kwargs):
+        logging.debug('Browser GET {}'.format(args[0]))
         return self.set_referer(self.s.get, *args, **kwargs)
 
     def post(self, *args, **kwargs):
+        logging.debug('Browser POST {}'.format(args[0]))
         return self.set_referer(self.s.post, *args, **kwargs)
 
 def random_sleep(min_sec=0.6, max_sec=5.3):
