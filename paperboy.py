@@ -39,6 +39,7 @@ def main():
 
     browser = Browser(args.user_agent, os.path.expanduser(args.cookie_file))
 
+    random_sleep()
     index_page = browser.get('http://www.faz.net')
     # With the index_page alone we cannot easily find out if we are logged in or not...
     # A JS function replaces the login button by the user name depending on a cookie:
@@ -46,8 +47,10 @@ def main():
     # in http://www.faz.net/5.9.8/js/all_scripts.min.js
 
     #import pdb; pdb.set_trace()
+    random_sleep()
 
     login_page = browser.get('https://www.faz.net/mein-faz-net/?redirectUrl=%2Faktuell%2F')
+    random_sleep()
     logged_in = len(BeautifulSoup(login_page.text).select('span.Username')) > 0
 
     if logged_in:
@@ -70,12 +73,14 @@ def main():
             logging.error('Incorrect credentials?')
             sys.exit(1)
 
+    random_sleep()
     epaper = browser.get('http://www.faz.net/e-paper/')
 
     newspapers = ('FAZ', 'FAS')
     produkttypen = ('FAZ', 'FAZ_RMZ', 'FAS')
     issues = dict()
     for newspaper in newspapers:
+        random_sleep()
         issues[newspaper] = browser.get_json('http://www.faz.net/e-paper/epaper/list/%s' % newspaper)
 
     # Collect all issue URLs
@@ -88,6 +93,7 @@ def main():
         os.makedirs(args.output_directory)
 
     # Download all newspaper issues:
+    random_sleep()
     for url in FAZ_urls + FAS_urls:
         overview = browser.get_json('http://www.faz.net/e-paper/epaper/overview/'+url)
         filename = overview['ausgabePdf']
@@ -101,9 +107,7 @@ def main():
         with open(fullpath, 'wb') as f:
             for chunk in pdf.iter_content(1024):
                 f.write(chunk)
-        stime = 2.6 + random.random()*60.
-        logging.info("sleeping for {} seconds...".format(stime))
-        time.sleep(stime)
+        random_sleep()
 
     browser.close()
 
@@ -165,6 +169,11 @@ class Browser(object):
 
     def post(self, *args, **kwargs):
         return self.set_referer(self.s.post, *args, **kwargs)
+
+def random_sleep(min_sec=0.6, max_sec=5.3):
+    st = random.uniform(min_sec, max_sec)
+    logging.debug('Sleep time: {}'.format(st))
+    time.sleep(st)
 
 if __name__ == "__main__":
     main()
