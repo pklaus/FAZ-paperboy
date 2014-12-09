@@ -29,3 +29,9 @@ It is written for Python 3.x and requires the modules
 [requests](https://pypi.python.org/pypi/requests/) and
 [beautifulsoup4](https://pypi.python.org/pypi/beautifulsoup4/).
 
+### Similar Software
+
+* *faz2kindle*:
+  * Blog post [FAZ to Kindle in Python](http://www.peterhofmann.me/2013/11/faz-to-kindle-in-python/)
+  * [faz2kindle on Github](https://github.com/peteh/faz2kindle)
+
