@@ -46,7 +46,6 @@ def main():
     # function LoginDecorator
     # in http://www.faz.net/5.9.8/js/all_scripts.min.js
 
-    #import pdb; pdb.set_trace()
     random_sleep()
 
     login_page = browser.get('https://www.faz.net/mein-faz-net/?redirectUrl=%2Faktuell%2F')
