@@ -152,11 +152,12 @@ class Browser(object):
             kwargs['headers'].update(headers)
         except KeyError:
             kwargs['headers'] = headers
-        return self.s.get(*args, **kwargs).json()
+        return self.get(*args, **kwargs).json()
 
     def set_referer(self, func, *args, **kwargs):
         if 'referer' in kwargs:
             headers = { 'Referer': kwargs['referer'] }
+            del kwargs['referer']
             if headers in kwargs:
                 kwargs['headers'].update(headers)
             else:
