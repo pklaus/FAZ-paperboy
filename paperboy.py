@@ -4,6 +4,7 @@
 FAZ-paperboy delivers your FAZ or F.A.S. newspaper freshly every day.
 """
 
+
 try:
     from bs4 import BeautifulSoup
     import requests
@@ -17,6 +18,7 @@ import os
 import sys
 import stat
 import logging
+
 
 def main():
     import argparse
@@ -110,6 +112,7 @@ def main():
 
     browser.close()
 
+
 class Browser(object):
     def __init__(self, user_agent, cookie_file, store_any_cookie=False):
         self.s = requests.Session()
@@ -177,10 +180,12 @@ class Browser(object):
         logging.debug('Browser POST {}'.format(args[0]))
         return self.set_referer(self.s.post, *args, **kwargs)
 
+
 def random_sleep(min_sec=0.6, max_sec=5.3):
     st = random.uniform(min_sec, max_sec)
     logging.debug('Sleep time: {}'.format(st))
     time.sleep(st)
+
 
 if __name__ == "__main__":
     main()
