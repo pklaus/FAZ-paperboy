@@ -80,7 +80,7 @@ def main():
     issues = dict()
     for newspaper in newspapers:
         random_sleep()
-        issues[newspaper] = browser.get_json('http://www.faz.net/e-paper/epaper/list/%s' % newspaper)
+        issues[newspaper] = browser.get_json('http://www.faz.net/e-paper/epaper/list/%s' % newspaper, referer='http://www.faz.net/e-paper/')
 
     # Collect all issue URLs
     FAZ_urls = [issue['ausgaben'][0]['url'] for issue in issues['FAZ']]
@@ -94,7 +94,7 @@ def main():
     # Download all newspaper issues:
     random_sleep()
     for url in FAZ_urls + FAS_urls:
-        overview = browser.get_json('http://www.faz.net/e-paper/epaper/overview/'+url)
+        overview = browser.get_json('http://www.faz.net/e-paper/epaper/overview/'+url, referer='http://www.faz.net/e-paper/')
         filename = overview['ausgabePdf']
         pdf_url = 'http://www.faz.net/e-paper/epaper/pdf/{}/{}'.format(url, filename)
         fullpath = os.path.join(args.output_directory, filename)
@@ -143,7 +143,6 @@ class Browser(object):
         headers = {
           'Accept': 'application/json, text/javascript, */*; q=0.01',
           'X-Requested-With': 'XMLHttpRequest',
-          'Referer': 'http://www.faz.net/e-paper/',
           'Connection': 'keep-alive',
         }
         try:
@@ -153,6 +152,13 @@ class Browser(object):
         return self.s.get(*args, **kwargs).json()
 
     def set_referer(self, func, *args, **kwargs):
+        if 'referer' in kwargs:
+            headers = { 'Referer': kwargs['referer'] }
+            if headers in kwargs:
+                kwargs['headers'].update(headers)
+            else:
+                kwargs['headers'] = headers
+            return func(*args, **kwargs)
 
         if self.last:
             headers = { 'Referer': self.last }
