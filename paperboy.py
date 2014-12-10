@@ -158,7 +158,7 @@ class Browser(object):
         if 'referer' in kwargs:
             headers = { 'Referer': kwargs['referer'] }
             del kwargs['referer']
-            if headers in kwargs:
+            if 'headers' in kwargs:
                 kwargs['headers'].update(headers)
             else:
                 kwargs['headers'] = headers
