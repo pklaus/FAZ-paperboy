@@ -75,14 +75,14 @@ def main():
             sys.exit(1)
 
     random_sleep()
-    epaper = browser.get('http://www.faz.net/e-paper/')
+    epaper = browser.get('http://www.faz.net/e-paper/?GETS=pcp;faz-net;pcc;epaper.navitab#FAZ')
 
     newspapers = ('FAZ', 'FAS')
     produkttypen = ('FAZ', 'FAZ_RMZ', 'FAS')
     issues = dict()
     for newspaper in newspapers:
         random_sleep()
-        issues[newspaper] = browser.get_json('http://www.faz.net/e-paper/epaper/list/%s' % newspaper, referer='http://www.faz.net/e-paper/')
+        issues[newspaper] = browser.get_json('http://epaper.faz.net/epaper/list/%s' % newspaper, referer='http://epaper.faz.net/')
 
     # Collect all issue URLs
     FAZ_urls = [issue['ausgaben'][0]['url'] for issue in issues['FAZ']]
@@ -96,9 +96,9 @@ def main():
     # Download all newspaper issues:
     random_sleep()
     for url in FAZ_urls + FAS_urls:
-        overview = browser.get_json('http://www.faz.net/e-paper/epaper/overview/'+url, referer='http://www.faz.net/e-paper/')
+        overview = browser.get_json('http://epaper.faz.net/epaper/overview/'+url, referer='http://epaper.faz.net/')
         filename = overview['ausgabePdf']
-        pdf_url = 'http://www.faz.net/e-paper/epaper/pdf/{}/{}'.format(url, filename)
+        pdf_url = 'http://epaper.faz.net/epaper/pdf/{}/{}'.format(url, filename)
         fullpath = os.path.join(args.output_directory, filename)
         if os.path.exists(fullpath):
             logging.info("{} already downloaded... ".format(filename))
