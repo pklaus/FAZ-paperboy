@@ -12,6 +12,7 @@ try:
 except ImportError:
     ext_deps = False
 import random
+import re
 import http.cookiejar
 import time
 import os
@@ -19,6 +20,7 @@ import sys
 import stat
 import logging
 
+logger = logging.getLogger(__name__)
 
 def main():
     import argparse
@@ -55,60 +57,79 @@ def main():
     logged_in = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) > 0
 
     if logged_in:
-        logging.info("Already logged in.")
+        logger.info("Already logged in.")
     else:
-        logging.info("Not logged in yet, trying to log in.")
+        logger.info("Not logged in yet, trying to log in.")
         login_data = {
-          'loginUrl': '/mein-faz-net/',
-          'redirectUrl': '/aktuell/',
           'loginName': args.username,
           'password': args.password,
+          'redirectUrl': '/epaper/',
           'rememberMe': 'on'
         }
         login_answer = browser.post('https://www.faz.net/membership/loginNoScript', data=login_data)
 
         login_page = browser.get('https://www.faz.net/mein-faz-net/?redirectUrl=%2Faktuell%2F')
+        if args.debug:
+            with open('login_page.html', 'w') as f:
+                f.write(login_page.text)
         logged_off = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) == 0
 
         if logged_off:
-            logging.error('Incorrect credentials?')
+            logger.error('Incorrect credentials?')
             sys.exit(1)
 
     random_sleep()
-    epaper = browser.get('http://www.faz.net/e-paper/?GETS=pcp;faz-net;pcc;epaper.navitab#FAZ')
+    epaper = browser.get('http://epaper.faz.net/')
+    epaper = BeautifulSoup(epaper.text, "html.parser")
 
-    newspapers = ('FAZ', 'FAS')
-    produkttypen = ('FAZ', 'FAZ_RMZ', 'FAS')
-    issues = dict()
-    for newspaper in newspapers:
-        random_sleep()
-        issues[newspaper] = browser.get_json('http://epaper.faz.net/epaper/list/%s' % newspaper, referer='http://epaper.faz.net/')
-
-    # Collect all issue URLs
-    FAZ_urls = [issue['ausgaben'][0]['url'] for issue in issues['FAZ']]
-    FAS_urls = [issue['ausgaben'][0]['url'] for issue in issues['FAS']]
-
+    newspapers = ('FAZ', 'WOCHE', 'FAS') # in the order in which they are listed on the page
+    issues = []
+    for i, newspaper in enumerate(newspapers):
+        for dropdown in epaper.select('.dropdown-issues-list')[i].select('li a'):
+            if dropdown['data-slug'] != newspaper:
+                print(dropdown)
+                continue
+            releaseDate = dropdown['data-release-date']
+            data = {
+              'releaseDate': releaseDate,
+              'slug':        newspaper,
+            }
+            issue_answer = browser.post_json('http://epaper.faz.net/api/epaper/change-release-date', json=data)
+            soup = BeautifulSoup(issue_answer['htmlContent'], "html.parser")
+            links = soup.findAll('a', href=re.compile('webreader'))
+            if len(links) != 1:
+                logger.warning("No subscription for this issue: {} - {}?".format(newspaper, releaseDate))
+                continue
+            link = links[0]['href']
+            link = link.split('/')[2]
+            issues.append({'newspaper': newspaper, 'link': link, 'releaseDate': releaseDate})
 
     # Create output directory if it doesn't exist:
     if not os.path.isdir(args.output_directory):
         os.makedirs(args.output_directory)
 
     # Download all newspaper issues:
+    cd_re = re.compile(r'filename="(.*)"') # Content-Disposition regex
     random_sleep()
-    for url in FAZ_urls + FAS_urls:
-        overview = browser.get_json('http://epaper.faz.net/epaper/overview/'+url, referer='http://epaper.faz.net/')
-        filename = overview['ausgabePdf']
-        pdf_url = 'http://epaper.faz.net/epaper/pdf/{}/{}'.format(url, filename)
+    for issue in issues:
+        pdf_url = 'http://epaper.faz.net/epaper/download/{}'.format(issue['link'])
+        pdf_response = browser.get(pdf_url, stream=True)
+        try:
+            filename = cd_re.search(pdf_response.headers['Content-Disposition']).group(1)
+        except (IndexError, AttributeError, KeyError):
+            logger.warning('Something wrong with this issue: {} ?'.format(issue))
+            pdf_response.close()
+            continue
         fullpath = os.path.join(args.output_directory, filename)
         if os.path.exists(fullpath):
-            logging.info("{} already downloaded... ".format(filename))
+            logger.info("{} already downloaded... ".format(filename))
+            pdf_response.close()
             continue
-        logging.info("Downloading {}...".format(filename))
-        pdf = browser.get(pdf_url, stream=True)
+        logger.info("Downloading {}...".format(filename))
         with open(fullpath, 'wb') as f:
-            for chunk in pdf.iter_content(1024):
+            for chunk in pdf_response.iter_content(1024):
                 f.write(chunk)
-        random_sleep()
+        pdf_response.close()
 
     browser.close()
 
@@ -135,11 +156,24 @@ class Browser(object):
         self.last = None
 
     def close(self):
-        logging.debug("saving cookies")
+        logger.debug("saving cookies")
         try:
             self.s.cookies.save(self.cookie_file, ignore_discard=self.store_any_cookie)
         except:
             pass
+
+    def post_json(self, *args, **kwargs):
+        # Different headers for json requests:
+        headers = {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Connection': 'keep-alive',
+        }
+        try:
+            kwargs['headers'].update(headers)
+        except KeyError:
+            kwargs['headers'] = headers
+        return self.post(*args, **kwargs).json()
 
     def get_json(self, *args, **kwargs):
         # Different headers for json requests:
@@ -174,17 +208,17 @@ class Browser(object):
         return func(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        logging.debug('Browser GET {}'.format(args[0]))
+        logger.debug('Browser GET {}'.format(args[0]))
         return self.set_referer(self.s.get, *args, **kwargs)
 
     def post(self, *args, **kwargs):
-        logging.debug('Browser POST {}'.format(args[0]))
+        logger.debug('Browser POST {}'.format(args[0]))
         return self.set_referer(self.s.post, *args, **kwargs)
 
 
 def random_sleep(min_sec=0.6, max_sec=5.3):
     st = random.uniform(min_sec, max_sec)
-    logging.debug('Sleep time: {}'.format(st))
+    logger.debug('Sleep time: {}'.format(st))
     time.sleep(st)
 
 
