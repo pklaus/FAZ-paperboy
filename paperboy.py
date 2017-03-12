@@ -87,7 +87,7 @@ def main():
     for i, newspaper in enumerate(newspapers):
         for dropdown in epaper.select('.dropdown-issues-list')[i].select('li a'):
             if dropdown['data-slug'] != newspaper:
-                print(dropdown)
+                logger.warning("Strange dropdown item: " + str(dropdown))
                 continue
             releaseDate = dropdown['data-release-date']
             data = {
