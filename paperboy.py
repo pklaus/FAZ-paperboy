@@ -30,6 +30,7 @@ def main():
     parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='File to store the cookies in.', default='~/.FAZ-paperboy_cookies.txt')
+    parser.add_argument('--filename-template', '-t', help='Template for the output filenames. By default this is {date}_{newspaper}.pdf. If you want to get the original filename of the PDFs, use "unchanged".', default='{date}_{newspaper}.pdf')
     parser.add_argument('--debug', '-d', action='store_true', help='Increase verbosity.')
 
     if not ext_deps: parser.error("Missing at least one of the python modules 'requests' or 'beautifulsoup4'.")
@@ -112,19 +113,31 @@ def main():
     cd_re = re.compile(r'filename="(.*)"') # Content-Disposition regex
     random_sleep()
     for issue in issues:
+        if args.filename_template != 'unchanged':
+            date = issue['releaseDate'].split('.')
+            date = ''.join(reversed(date))
+            filename = args.filename_template.format(newspaper=issue['newspaper'], date=date)
+            fullpath = os.path.join(args.output_directory, filename)
+            if os.path.exists(fullpath):
+                logger.info("{} already downloaded... ".format(filename))
+                continue
+
         pdf_url = 'http://epaper.faz.net/epaper/download/{}'.format(issue['link'])
         pdf_response = browser.get(pdf_url, stream=True)
-        try:
-            filename = cd_re.search(pdf_response.headers['Content-Disposition']).group(1)
-        except (IndexError, AttributeError, KeyError):
-            logger.warning('Something wrong with this issue: {} ?'.format(issue))
-            pdf_response.close()
+
+        if args.filename_template == 'unchanged':
+            try:
+                filename = cd_re.search(pdf_response.headers['Content-Disposition']).group(1)
+            except (IndexError, AttributeError, KeyError):
+                logger.warning('Something wrong with this issue: {} ?'.format(issue))
+                pdf_response.close()
             continue
-        fullpath = os.path.join(args.output_directory, filename)
-        if os.path.exists(fullpath):
-            logger.info("{} already downloaded... ".format(filename))
-            pdf_response.close()
-            continue
+            fullpath = os.path.join(args.output_directory, filename)
+            if os.path.exists(fullpath):
+                logger.info("{} already downloaded... ".format(filename))
+                pdf_response.close()
+                continue
+
         logger.info("Downloading {}...".format(filename))
         with open(fullpath, 'wb') as f:
             for chunk in pdf_response.iter_content(1024):
