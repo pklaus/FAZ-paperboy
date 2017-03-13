@@ -5,7 +5,8 @@ newspaper freshly every day. Its CLI signature is as follows:
 
     usage: paperboy.py [-h] --user-agent USER_AGENT --output-directory
                        OUTPUT_DIRECTORY --username USERNAME --password PASSWORD
-                       [--cookie-file COOKIE_FILE] [--debug]
+                       [--cookie-file COOKIE_FILE]
+                       [--filename-template FILENAME_TEMPLATE] [--debug]
     
     FAZ-paperboy delivers your FAZ or F.A.S. newspaper freshly every day.
     
@@ -23,6 +24,10 @@ newspaper freshly every day. Its CLI signature is as follows:
                             Password for user given by --username.
       --cookie-file COOKIE_FILE, -c COOKIE_FILE
                             File to store the cookies in.
+      --filename-template FILENAME_TEMPLATE, -t FILENAME_TEMPLATE
+                            Template for the output filenames. By default this is
+                            "{date}_{newspaper}.pdf". If you want to use the
+                            original filename of the PDFs, use "{original}.pdf".
       --debug, -d           Increase verbosity.
 
 It is written for Python 3.x and requires the modules
