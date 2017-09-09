@@ -97,6 +97,12 @@ def main():
             }
             issue_answer = browser.post_json('http://epaper.faz.net/api/epaper/change-release-date', json=data)
             soup = BeautifulSoup(issue_answer['htmlContent'], "html.parser")
+            main_issue = soup.select('div.newspaper.main-issue')
+            if len(main_issue) != 1:
+                logger.warning("Strange content for this issue: {} - {}?".format(newspaper, releaseDate))
+                for line in str(soup).split('\n'): logger.debug(line)
+                continue
+            soup = main_issue[0]
             links = soup.findAll('a', href=re.compile('webreader'))
             if len(links) != 1:
                 logger.warning("No subscription for this issue: {} - {}?".format(newspaper, releaseDate))
