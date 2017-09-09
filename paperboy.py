@@ -53,9 +53,9 @@ def main():
 
     random_sleep()
 
-    login_page = browser.get('https://www.faz.net/mein-faz-net/?redirectUrl=%2Faktuell%2F')
+    login_page = browser.get('https://www.faz.net/mein-faz-net/profil/')
     random_sleep()
-    logged_in = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) > 0
+    logged_in = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) > 1
 
     if logged_in:
         logger.info("Already logged in.")
@@ -69,11 +69,11 @@ def main():
         }
         login_answer = browser.post('https://www.faz.net/membership/loginNoScript', data=login_data)
 
-        login_page = browser.get('https://www.faz.net/mein-faz-net/?redirectUrl=%2Faktuell%2F')
+        login_page = browser.get('https://www.faz.net/mein-faz-net/profil/')
         if args.debug:
             with open('login_page.html', 'w') as f:
                 f.write(login_page.text)
-        logged_off = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) == 0
+        logged_off = len(BeautifulSoup(login_page.text, "html.parser").select('span.Username')) <= 1
 
         if logged_off:
             logger.error('Incorrect credentials?')
