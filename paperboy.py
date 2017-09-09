@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='File to store the cookies in.', default='~/.FAZ-paperboy_cookies.txt')
-    parser.add_argument('--filename-template', '-t', help='Template for the output filenames. By default this is "{date}_{newspaper}.pdf". If you want to use the original filename of the PDFs, use "{original}.pdf".', default='{date}_{newspaper}.pdf')
+    parser.add_argument('--filename-template', '-t', help='Template for the output filenames. By default this is "{isodate}_{orig_newspaper}.pdf". {isodate} is the date in the format YYYY-MM-DD. For the date in the format YYYYMMDD, just use {date}. If you want to use the original filename of the PDFs, you could use "{original}.pdf". For a short version of the newspaper name, there is also {newspaper}.', default='{isodate}_{orig_newspaper}.pdf')
     parser.add_argument('--debug', '-d', action='store_true', help='Increase verbosity.')
 
     if not ext_deps: parser.error("Missing at least one of the python modules 'requests' or 'beautifulsoup4'.")
@@ -133,8 +133,16 @@ def main():
             continue
 
         date = ''.join(reversed(issue['releaseDate'].split('.')))
+        isodate = '-'.join(reversed(issue['releaseDate'].split('.')))
         original = os.path.splitext(orig_filename)[0]
-        filename = args.filename_template.format(newspaper=issue['newspaper'], date=date, original=original)
+        match = re.match('^([^\d]*)-\d{2}\.\d{2}\.\d{4}$', original)
+        if match:
+            orig_newspaper = match.group(1)
+        else:
+            logger.warn("Couln't match the original filename. Please report this issue to the author.")
+            logger.warn("Setting orig_newspaper = original = " + original)
+            orig_newspaper = original
+        filename = args.filename_template.format(newspaper=issue['newspaper'], isodate=isodate, date=date, original=original, orig_newspaper=orig_newspaper)
         fullpath = os.path.join(args.output_directory, filename)
 
         if os.path.exists(fullpath):
