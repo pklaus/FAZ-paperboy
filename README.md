@@ -3,6 +3,7 @@
 FAZ-paperboy is a command line tool to deliver your FAZ or F.A.S.
 newspaper freshly every day. Its CLI signature is as follows:
 
+    $ ./paperboy.py --help
     usage: paperboy.py [-h] --user-agent USER_AGENT --output-directory
                        OUTPUT_DIRECTORY --username USERNAME --password PASSWORD
                        [--cookie-file COOKIE_FILE]
@@ -26,8 +27,12 @@ newspaper freshly every day. Its CLI signature is as follows:
                             File to store the cookies in.
       --filename-template FILENAME_TEMPLATE, -t FILENAME_TEMPLATE
                             Template for the output filenames. By default this is
-                            "{date}_{newspaper}.pdf". If you want to use the
-                            original filename of the PDFs, use "{original}.pdf".
+                            "{isodate}_{orig_newspaper}.pdf". {isodate} is the
+                            date in the format YYYY-MM-DD. For the date in the
+                            format YYYYMMDD, just use {date}. If you want to use
+                            the original filename of the PDFs, you could use
+                            "{original}.pdf". For a short version of the newspaper
+                            name, there is also {newspaper}.
       --debug, -d           Increase verbosity.
 
 It is written for Python 3.x and requires the modules
