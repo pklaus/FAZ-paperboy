@@ -5,8 +5,8 @@ newspaper freshly every day. Its CLI signature is as follows:
 
     $ ./paperboy.py --help
     usage: paperboy.py [-h] --user-agent USER_AGENT --output-directory
-                       OUTPUT_DIRECTORY --username USERNAME --password PASSWORD
-                       [--cookie-file COOKIE_FILE]
+                       OUTPUT_DIRECTORY --fullname FULLNAME --username USERNAME
+                       --password PASSWORD [--cookie-file COOKIE_FILE]
                        [--filename-template FILENAME_TEMPLATE] [--debug]
     
     FAZ-paperboy delivers your FAZ or F.A.S. newspaper freshly every day.
@@ -18,8 +18,11 @@ newspaper freshly every day. Its CLI signature is as follows:
       --output-directory OUTPUT_DIRECTORY, -o OUTPUT_DIRECTORY
                             Directory to store the PDFs of the downloaded
                             newspaper issues.
+      --fullname FULLNAME, -f FULLNAME
+                            Full name of the user when logged in to the profile on
+                            https://www.faz.net/mein-faz-net/profil/ .
       --username USERNAME, -u USERNAME
-                            User name to login at http://faz.net for the e-paper
+                            User name to login at https://faz.net for the e-paper
                             download.
       --password PASSWORD, -p PASSWORD
                             Password for user given by --username.
