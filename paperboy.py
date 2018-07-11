@@ -33,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--user-agent', '-ua', required=True, help='User agent you want paperboy to use.')
     parser.add_argument('--output-directory', '-o', required=True, help='Directory to store the PDFs of the downloaded newspaper issues.')
-    parser.add_argument('--fullname', '-f', required=True, help='Full name of the user when logged in to the profile on https://www.faz.net/mein-faz-net/profil/ .')
+    parser.add_argument('--fullname', '-f', required=True, help='Full name of the user as shown when logged in to the profile on https://www.faz.net/mein-faz-net/profil/ - used to check if logged in successfully.')
     parser.add_argument('--username', '-u', required=True, help='User name to login at https://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='File to store the cookies in.', default='~/.FAZ-paperboy_cookies.txt')

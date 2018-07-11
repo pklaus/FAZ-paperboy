@@ -19,8 +19,9 @@ newspaper freshly every day. Its CLI signature is as follows:
                             Directory to store the PDFs of the downloaded
                             newspaper issues.
       --fullname FULLNAME, -f FULLNAME
-                            Full name of the user when logged in to the profile on
-                            https://www.faz.net/mein-faz-net/profil/ .
+                            Full name of the user as shown when logged in to the
+                            profile on https://www.faz.net/mein-faz-net/profil/ -
+                            used to check if logged in successfully.
       --username USERNAME, -u USERNAME
                             User name to login at https://faz.net for the e-paper
                             download.
