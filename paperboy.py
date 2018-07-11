@@ -34,7 +34,7 @@ def main():
     parser.add_argument('--user-agent', '-ua', required=True, help='User agent you want paperboy to use.')
     parser.add_argument('--output-directory', '-o', required=True, help='Directory to store the PDFs of the downloaded newspaper issues.')
     parser.add_argument('--fullname', '-f', required=True, help='Full name of the user when logged in to the profile on https://www.faz.net/mein-faz-net/profil/ .')
-    parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
+    parser.add_argument('--username', '-u', required=True, help='User name to login at https://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='File to store the cookies in.', default='~/.FAZ-paperboy_cookies.txt')
     parser.add_argument('--filename-template', '-t', help='Template for the output filenames. By default this is "{isodate}_{orig_newspaper}.pdf". {isodate} is the date in the format YYYY-MM-DD. For the date in the format YYYYMMDD, just use {date}. If you want to use the original filename of the PDFs, you could use "{original}.pdf". For a short version of the newspaper name, there is also {newspaper}.', default='{isodate}_{orig_newspaper}.pdf')
@@ -52,7 +52,7 @@ def main():
     browser = Browser(args.user_agent, os.path.expanduser(args.cookie_file))
 
     random_sleep()
-    index_page = browser.get('http://www.faz.net')
+    index_page = browser.get('https://www.faz.net')
     # With the index_page alone we cannot easily find out if we are logged in or not...
     # A JS function replaces the login button by the user name depending on a cookie:
     # function LoginDecorator
