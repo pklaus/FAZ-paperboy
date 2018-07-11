@@ -22,11 +22,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def logged_in(profile_page_html, fullname):
+    # formerly this was:
+    #soup = BeautifulSoup(profile_page_html, "html.parser")
+    #return len(soup.select('span.Username')) > 1
+    return fullname in profile_page_html
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--user-agent', '-ua', required=True, help='User agent you want paperboy to use.')
     parser.add_argument('--output-directory', '-o', required=True, help='Directory to store the PDFs of the downloaded newspaper issues.')
+    parser.add_argument('--fullname', '-f', required=True, help='Full name of the user when logged in to the profile on https://www.faz.net/mein-faz-net/profil/ .')
     parser.add_argument('--username', '-u', required=True, help='User name to login at http://faz.net for the e-paper download.')
     parser.add_argument('--password', '-p', required=True, help='Password for user given by --username.')
     parser.add_argument('--cookie-file', '-c', help='File to store the cookies in.', default='~/.FAZ-paperboy_cookies.txt')
@@ -54,18 +61,17 @@ def main():
     random_sleep()
 
     login_page = browser.get('https://www.faz.net/mein-faz-net/profil/')
-    random_sleep()
-    soup = BeautifulSoup(login_page.text, "html.parser")
-    logged_in = len(soup.select('span.Username')) > 1
 
-    if logged_in:
+    random_sleep()
+    if logged_in(login_page.text, fullname=args.fullname):
         logger.info("Already logged in.")
     else:
         logger.info("Not logged in yet, trying to log in.")
         login_data = {
           'loginName': args.username,
+          'loginUrl': '/mein-faz-net/',
           'password': args.password,
-          'redirectUrl': '/epaper/',
+          'redirectUrl': '/mein-faz-net/',
           'rememberMe': 'on'
         }
         login_answer = browser.post('https://www.faz.net/membership/loginNoScript', data=login_data)
@@ -74,10 +80,8 @@ def main():
         if args.debug:
             with open('login_page.html', 'w') as f:
                 f.write(login_page.text)
-        soup = BeautifulSoup(login_page.text, "html.parser")
-        logged_off = len(soup.select('span.Username')) <= 1
 
-        if logged_off:
+        if not logged_in(login_page.text, fullname=args.fullname):
             logger.error('Incorrect credentials?')
             sys.exit(1)
 
